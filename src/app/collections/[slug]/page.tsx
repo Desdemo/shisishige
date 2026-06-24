@@ -3,6 +3,10 @@ import { collections } from "@/data/photos"
 import { MapPin, Camera, PlayCircle, ArrowLeft } from "@/components/Icons"
 import Link from "next/link"
 
+export function generateStaticParams() {
+  return collections.map((c) => ({ slug: c.slug }))
+}
+
 interface Props {
   params: Promise<{ slug: string }>
 }
