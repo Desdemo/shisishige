@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { MapPin, PlayCircle } from "@/components/Icons"
 import type { Photo } from "@/data/photos"
 
@@ -8,9 +8,12 @@ interface Props {
   photos: Photo[]
 }
 
+const VIDEO_URL = "https://assets.mixkit.co/videos/21579/21579-1080.mp4"
+
 export default function HeroCarousel({ photos }: Props) {
   const [current, setCurrent] = useState(0)
   const [prev, setPrev] = useState(photos.length - 1)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
   const next = useCallback(() => {
     setPrev(current)
@@ -22,18 +25,35 @@ export default function HeroCarousel({ photos }: Props) {
     return () => clearInterval(timer)
   }, [next])
 
+  const isVideo = current === 0
+
   return (
     <section className="relative h-[100dvh] w-full overflow-hidden bg-black">
-      <div
-        key={photos[current].id}
-        className="absolute inset-0 animate-fade-in"
-      >
-        <img
-          src={photos[current].src}
-          alt={photos[current].alt}
-          className="h-full w-full object-cover"
-        />
-      </div>
+      <video
+        ref={videoRef}
+        className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+          isVideo ? "opacity-100" : "opacity-0"
+        }`}
+        src={VIDEO_URL}
+        poster={photos[0].src}
+        muted
+        autoPlay
+        loop
+        playsInline
+      />
+
+      {!isVideo && (
+        <div
+          key={photos[current].id}
+          className="absolute inset-0 animate-fade-in"
+        >
+          <img
+            src={photos[current].src}
+            alt={photos[current].alt}
+            className="h-full w-full object-cover"
+          />
+        </div>
+      )}
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/10" />

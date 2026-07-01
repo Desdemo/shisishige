@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { List, X } from "@/components/Icons"
 
 const links = [
   { href: "/", label: "首页" },
@@ -15,13 +14,24 @@ export default function Header() {
   const pathname = usePathname()
   const isHome = pathname === "/"
   const [scrolled, setScrolled] = useState(false)
+  const [hidden, setHidden] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const prevScroll = useRef(0)
+  const entered = useRef(false)
+
+  useEffect(() => {
+    entered.current = true
+  }, [])
 
   useEffect(() => {
     const onScroll = () => {
       const y = window.scrollY
       setScrolled(y > 60)
+      if (y > 120 && y > prevScroll.current) {
+        setHidden(true)
+      } else {
+        setHidden(false)
+      }
       prevScroll.current = y
     }
     window.addEventListener("scroll", onScroll, { passive: true })
@@ -34,26 +44,28 @@ export default function Header() {
     <header
       className={`fixed top-0 right-0 left-0 z-50 transition-all duration-500 ${
         showBg ? "bg-background/80 backdrop-blur-xl border-b border-border" : ""
-      }`}
+      } ${hidden ? "-translate-y-full" : "translate-y-0"}`}
     >
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link
           href="/"
-          className="text-lg font-serif tracking-wide text-foreground transition-opacity hover:opacity-60"
+          className={`text-lg font-serif tracking-wide text-foreground transition-opacity hover:opacity-60 ${
+            entered.current ? "" : "animate-slide-down"
+          }`}
         >
           十四行诗
         </Link>
 
         <div className="hidden items-center gap-8 md:flex">
-          {links.map((link) => (
+          {links.map((link, i) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`text-sm transition-all hover:opacity-60 ${
+              className={`link-underline text-sm transition-all hover:opacity-60 ${
                 pathname === link.href
                   ? "text-foreground"
                   : "text-foreground/50"
-              }`}
+              } ${entered.current ? "" : `animate-slide-up animate-delay-${(i + 1) * 100}`}`}
             >
               {link.label}
             </Link>
@@ -62,14 +74,24 @@ export default function Header() {
 
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="relative z-50 flex md:hidden"
+          className="relative z-50 flex h-6 w-6 flex-col items-center justify-center gap-[5px] md:hidden"
           aria-label="Toggle menu"
         >
-          {menuOpen ? (
-            <X size={20} />
-          ) : (
-            <List size={20} />
-          )}
+          <span
+            className={`block h-[2px] w-5 rounded-full bg-current transition-all duration-300 ${
+              menuOpen ? "translate-y-[7px] rotate-45" : ""
+            }`}
+          />
+          <span
+            className={`block h-[2px] w-5 rounded-full bg-current transition-all duration-300 ${
+              menuOpen ? "opacity-0" : ""
+            }`}
+          />
+          <span
+            className={`block h-[2px] w-5 rounded-full bg-current transition-all duration-300 ${
+              menuOpen ? "-translate-y-[7px] -rotate-45" : ""
+            }`}
+          />
         </button>
       </nav>
 
